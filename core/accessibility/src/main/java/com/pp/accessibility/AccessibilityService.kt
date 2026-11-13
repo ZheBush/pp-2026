@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AppAccessibilityService : AccessibilityService() {
+class AccessibilityService : AccessibilityService() {
 
     @Inject lateinit var handleAppLaunchUseCase: HandleAppLaunchUseCase
     @Inject lateinit var handleAppExitUseCase: HandleAppExitUseCase
@@ -21,8 +21,8 @@ class AppAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            val packageName = event.packageName?.toString() ?: return
-
+//            val packageName = event.packageName?.toString() ?: return TODO("hardcoded name")
+            val packageName = "com.instagram.android"
             if (packageName != currentPackage) {
                 if (currentPackage != null) {
                     serviceScope.launch { handleAppExitUseCase() }
