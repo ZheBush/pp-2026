@@ -23,8 +23,7 @@ class AppAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-//            val packageName = event.packageName?.toString() ?: return TODO("hardcoded name")
-            val packageName = "com.instagram.android"
+            val packageName = event.packageName?.toString() ?: return
             if (packageName != currentPackage) {
                 if (currentPackage != null) {
                     serviceScope.launch { handleAppExitUseCase() }
