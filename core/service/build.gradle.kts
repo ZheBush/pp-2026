@@ -5,7 +5,7 @@ plugins {
 android {
     namespace = "com.pp.service"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }

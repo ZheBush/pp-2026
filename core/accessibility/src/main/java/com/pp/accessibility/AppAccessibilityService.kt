@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AccessibilityService : AccessibilityService() {
+class AppAccessibilityService : AccessibilityService() {
 
     @Inject lateinit var handleAppLaunchUseCase: HandleAppLaunchUseCase
     @Inject lateinit var handleAppExitUseCase: HandleAppExitUseCase

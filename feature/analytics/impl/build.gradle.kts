@@ -5,7 +5,7 @@ plugins {
 android {
     namespace = "com.pp.feature.analytics.impl"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }

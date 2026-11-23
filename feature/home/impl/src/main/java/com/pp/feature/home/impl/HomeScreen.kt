@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 
 @Composable
 fun HomeScreen() {
@@ -113,7 +114,7 @@ fun HomeScreen() {
                 onClick = {
                     val intent = Intent(
                         Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:${context.packageName}")
+                        "package:${context.packageName}".toUri()
                     )
                     context.startActivity(intent)
                 },
