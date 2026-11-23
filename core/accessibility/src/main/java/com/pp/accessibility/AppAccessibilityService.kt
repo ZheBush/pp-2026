@@ -1,9 +1,11 @@
 package com.pp.accessibility
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import com.pp.domain.usecase.HandleAppExitUseCase
 import com.pp.domain.usecase.HandleAppLaunchUseCase
+import com.pp.model.IntentKeys
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,6 +55,25 @@ class AppAccessibilityService : AccessibilityService() {
     }
 
     private fun launchInterceptorOverlay(packageName: String) {
-        TODO("Not yet implemented")
+        if (packageName == this.packageName) return
+
+        val intent = Intent().apply {
+            setClassName(
+                this@AppAccessibilityService.packageName,
+                "com.pp.feature.interceptor.impl.InterceptorActivity"
+            )
+            putExtra(IntentKeys.EXTRA_TARGET_PACKAGE, packageName)
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                        Intent.FLAG_ACTIVITY_NO_ANIMATION
+            )
+        }
+
+        runCatching {
+            startActivity(intent)
+        }.onFailure { error ->
+            android.util.Log.e("AppAccessibilityService", "Failed to launch InterceptorActivity", error)
+        }
     }
 }
