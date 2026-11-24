@@ -3,10 +3,12 @@ package com.pp.accessibility
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
 import com.pp.common.InterceptorPrefs
-import com.pp.domain.usecase.DismissInterceptorUseCase
+import com.pp.domain.usecase.interceptor.DismissInterceptorUseCase
 import com.pp.domain.usecase.HandleAppExitUseCase
 import com.pp.domain.usecase.HandleAppLaunchUseCase
-import com.pp.domain.usecase.ShowInterceptorUseCase
+import com.pp.domain.usecase.interceptor.ShowInterceptorUseCase
+import com.pp.domain.usecase.timer.StartTimerUseCase
+import com.pp.domain.usecase.timer.StopTimerUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +25,8 @@ class AppAccessibilityService : AccessibilityService() {
     @Inject lateinit var handleAppExitUseCase: HandleAppExitUseCase
     @Inject lateinit var showInterceptorUseCase: ShowInterceptorUseCase
     @Inject lateinit var dismissInterceptorUseCase: DismissInterceptorUseCase
+    @Inject lateinit var startTimerUseCase: StartTimerUseCase
+    @Inject lateinit var stopTimerUseCase: StopTimerUseCase
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var currentPackage: String? = null
@@ -63,6 +67,9 @@ class AppAccessibilityService : AccessibilityService() {
                                 showInterceptorUseCase(packageName)
                             }
                         }
+                        if (actions.shouldTimer) {
+                            startTimerUseCase(packageName)
+                        }
                     }
                 }
             }
@@ -74,12 +81,14 @@ class AppAccessibilityService : AccessibilityService() {
         activeInterceptedPackage = null
         serviceScope.launch(Dispatchers.Main) {
             dismissInterceptorUseCase()
+            stopTimerUseCase()
         }
     }
 
     override fun onDestroy() {
         serviceScope.launch(Dispatchers.Main) {
             dismissInterceptorUseCase()
+            stopTimerUseCase()
         }
         serviceScope.cancel()
         super.onDestroy()

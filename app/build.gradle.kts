@@ -58,5 +58,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(project(":feature:home:impl"))
     implementation(project(":feature:interceptor:impl"))
+    implementation(project(":feature:timer:impl"))
     implementation(project(":core:accessibility"))
 }

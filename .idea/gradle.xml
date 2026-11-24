@@ -30,6 +30,8 @@
             <option value="$PROJECT_DIR$/feature/settings" />
             <option value="$PROJECT_DIR$/feature/settings/api" />
             <option value="$PROJECT_DIR$/feature/settings/impl" />
+            <option value="$PROJECT_DIR$/feature/timer" />
+            <option value="$PROJECT_DIR$/feature/timer/impl" />
           </set>
         </option>
       </GradleProjectSettings>

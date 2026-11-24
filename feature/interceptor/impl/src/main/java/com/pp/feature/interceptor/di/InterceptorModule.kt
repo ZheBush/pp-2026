@@ -1,6 +1,6 @@
 package com.pp.feature.interceptor.di
 
-import com.pp.domain.InterceptorController
+import com.pp.domain.controller.InterceptorController
 import com.pp.feature.interceptor.impl.InterceptorControllerImpl
 import dagger.Binds
 import dagger.Module

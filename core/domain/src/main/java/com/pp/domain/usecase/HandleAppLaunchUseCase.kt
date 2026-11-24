@@ -17,7 +17,8 @@ class HandleAppLaunchUseCase @Inject constructor(
 
         return AppLaunchActions(
             shouldShowInterceptor = config.isInterceptorEnabled,
-            shouldEnableGrayscale = config.isGrayscaleEnabled
+            shouldEnableGrayscale = config.isGrayscaleEnabled,
+            shouldTimer = config.isTimerEnabled
         )
     }
 }

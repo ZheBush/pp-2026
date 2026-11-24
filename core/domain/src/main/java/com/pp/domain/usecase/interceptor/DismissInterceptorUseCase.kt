@@ -1,6 +1,6 @@
-package com.pp.domain.usecase
+package com.pp.domain.usecase.interceptor
 
-import com.pp.domain.InterceptorController
+import com.pp.domain.controller.InterceptorController
 import javax.inject.Inject
 
 class DismissInterceptorUseCase @Inject constructor(
