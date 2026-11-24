@@ -3,9 +3,10 @@ package com.pp.accessibility
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
+import com.pp.common.InterceptorPrefs
 import com.pp.domain.usecase.HandleAppExitUseCase
 import com.pp.domain.usecase.HandleAppLaunchUseCase
-import com.pp.model.IntentKeys
+import com.pp.common.IntentKeys
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,16 +28,16 @@ class AppAccessibilityService : AccessibilityService() {
             if (packageName != currentPackage) {
                 if (currentPackage != null) {
                     serviceScope.launch { handleAppExitUseCase() }
+                    InterceptorPrefs.clearIfDifferent(packageName)
                 }
                 currentPackage = packageName
-
                 serviceScope.launch {
                     val actions = handleAppLaunchUseCase(packageName)
                     if (actions != null) {
                         if (actions.shouldEnableGrayscale) {
                             enableGrayscaleMode(true)
                         }
-                        if (actions.shouldShowInterceptor) {
+                        if (actions.shouldShowInterceptor && !InterceptorPrefs.isBypassed(packageName)) {
                             launchInterceptorOverlay(packageName)
                         }
                     }

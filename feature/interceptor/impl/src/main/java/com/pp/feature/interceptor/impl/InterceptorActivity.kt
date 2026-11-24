@@ -23,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.pp.common.IntentKeys
+import com.pp.common.InterceptorPrefs
 
 class InterceptorActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +86,10 @@ class InterceptorActivity : ComponentActivity() {
 
                         OutlinedButton(
                             onClick = {
+                                val targetPackage = intent.getStringExtra(IntentKeys.EXTRA_TARGET_PACKAGE)
+                                if (targetPackage != null) {
+                                    InterceptorPrefs.allowOnce(targetPackage)
+                                }
                                 finish()
                             },
                             border = BorderStroke(1.dp, Color.Gray),
