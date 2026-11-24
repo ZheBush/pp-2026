@@ -32,11 +32,19 @@ class AppAccessibilityService : AccessibilityService() {
     private var currentPackage: String? = null
     private var activeInterceptedPackage: String? = null
 
+    private val ignoredPackages = setOf(
+        "com.android.systemui",
+        "android",
+        "com.android.launcher",
+        "com.android.launcher3",
+        "com.google.android.apps.nexuslauncher"
+    )
+
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
 
-            if (packageName == this.packageName) return
+            if (packageName == this.packageName || packageName in ignoredPackages) return
 
             if (packageName != currentPackage) {
                 val previousPackage = currentPackage
@@ -45,6 +53,7 @@ class AppAccessibilityService : AccessibilityService() {
                 if (previousPackage != null) {
                     serviceScope.launch {
                         handleAppExitUseCase()
+                        stopTimerUseCase()
                         if (activeInterceptedPackage != null && activeInterceptedPackage != packageName) {
                             activeInterceptedPackage = null
                             withContext(Dispatchers.Main) {
@@ -88,7 +97,7 @@ class AppAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         serviceScope.launch(Dispatchers.Main) {
             dismissInterceptorUseCase()
-            stopTimerUseCase()
+            stopTimerUseCase
         }
         serviceScope.cancel()
         super.onDestroy()
