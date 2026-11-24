@@ -1,16 +1,19 @@
 package com.pp.accessibility
 
 import android.accessibilityservice.AccessibilityService
-import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import com.pp.common.InterceptorPrefs
+import com.pp.domain.usecase.DismissInterceptorUseCase
 import com.pp.domain.usecase.HandleAppExitUseCase
 import com.pp.domain.usecase.HandleAppLaunchUseCase
-import com.pp.common.IntentKeys
+import com.pp.domain.usecase.ShowInterceptorUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -18,19 +21,36 @@ class AppAccessibilityService : AccessibilityService() {
 
     @Inject lateinit var handleAppLaunchUseCase: HandleAppLaunchUseCase
     @Inject lateinit var handleAppExitUseCase: HandleAppExitUseCase
+    @Inject lateinit var showInterceptorUseCase: ShowInterceptorUseCase
+    @Inject lateinit var dismissInterceptorUseCase: DismissInterceptorUseCase
 
-    private val serviceScope = CoroutineScope(Dispatchers.Default)
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var currentPackage: String? = null
+    private var activeInterceptedPackage: String? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
+
+            if (packageName == this.packageName) return
+
             if (packageName != currentPackage) {
-                if (currentPackage != null) {
-                    serviceScope.launch { handleAppExitUseCase() }
+                val previousPackage = currentPackage
+                currentPackage = packageName
+
+                if (previousPackage != null) {
+                    serviceScope.launch {
+                        handleAppExitUseCase()
+                        if (activeInterceptedPackage != null && activeInterceptedPackage != packageName) {
+                            activeInterceptedPackage = null
+                            withContext(Dispatchers.Main) {
+                                dismissInterceptorUseCase()
+                            }
+                        }
+                    }
                     InterceptorPrefs.clearIfDifferent(packageName)
                 }
-                currentPackage = packageName
+
                 serviceScope.launch {
                     val actions = handleAppLaunchUseCase(packageName)
                     if (actions != null) {
@@ -38,7 +58,10 @@ class AppAccessibilityService : AccessibilityService() {
                             enableGrayscaleMode(true)
                         }
                         if (actions.shouldShowInterceptor && !InterceptorPrefs.isBypassed(packageName)) {
-                            launchInterceptorOverlay(packageName)
+                            activeInterceptedPackage = packageName
+                            withContext(Dispatchers.Main) {
+                                showInterceptorUseCase(packageName)
+                            }
                         }
                     }
                 }
@@ -48,32 +71,21 @@ class AppAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {
         currentPackage = null
+        activeInterceptedPackage = null
+        serviceScope.launch(Dispatchers.Main) {
+            dismissInterceptorUseCase()
+        }
+    }
+
+    override fun onDestroy() {
+        serviceScope.launch(Dispatchers.Main) {
+            dismissInterceptorUseCase()
+        }
+        serviceScope.cancel()
+        super.onDestroy()
     }
 
     private fun enableGrayscaleMode(enable: Boolean) {
         TODO("Not yet implemented")
-    }
-
-    private fun launchInterceptorOverlay(packageName: String) {
-        if (packageName == this.packageName) return
-
-        val intent = Intent().apply {
-            setClassName(
-                this@AppAccessibilityService.packageName,
-                "com.pp.feature.interceptor.impl.InterceptorActivity"
-            )
-            putExtra(IntentKeys.EXTRA_TARGET_PACKAGE, packageName)
-            addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                        Intent.FLAG_ACTIVITY_NO_ANIMATION
-            )
-        }
-
-        runCatching {
-            startActivity(intent)
-        }.onFailure { error ->
-            android.util.Log.e("AppAccessibilityService", "Failed to launch InterceptorActivity", error)
-        }
     }
 }
