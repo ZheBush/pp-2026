@@ -1,12 +1,13 @@
 package com.pp.accessibility
 
 import android.accessibilityservice.AccessibilityService
+import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.pp.common.InterceptorPrefs
-import com.pp.domain.usecase.interceptor.DismissInterceptorUseCase
 import com.pp.domain.usecase.HandleAppExitUseCase
 import com.pp.domain.usecase.HandleAppLaunchUseCase
 import com.pp.domain.usecase.grayscale.SetGrayscaleUseCase
+import com.pp.domain.usecase.interceptor.DismissInterceptorUseCase
 import com.pp.domain.usecase.interceptor.ShowInterceptorUseCase
 import com.pp.domain.usecase.timer.StartTimerUseCase
 import com.pp.domain.usecase.timer.StopTimerUseCase
@@ -56,6 +57,7 @@ class AppAccessibilityService : AccessibilityService() {
                     serviceScope.launch {
                         handleAppExitUseCase()
                         stopTimerUseCase()
+                        setGrayscaleUseCase(false)
                         if (activeInterceptedPackage != null && activeInterceptedPackage != packageName) {
                             activeInterceptedPackage = null
                             withContext(Dispatchers.Main) {
@@ -69,9 +71,6 @@ class AppAccessibilityService : AccessibilityService() {
                 serviceScope.launch {
                     val actions = handleAppLaunchUseCase(packageName)
                     if (actions != null) {
-                        if (actions.shouldEnableGrayscale) {
-                            setGrayscaleUseCase(true)
-                        }
                         if (actions.shouldShowInterceptor && !InterceptorPrefs.isBypassed(packageName)) {
                             activeInterceptedPackage = packageName
                             withContext(Dispatchers.Main) {
@@ -80,6 +79,10 @@ class AppAccessibilityService : AccessibilityService() {
                         }
                         if (actions.shouldTimer) {
                             startTimerUseCase(packageName)
+                        }
+                        if (true) {
+                            Log.d("GrayscaleController", "enabled")
+                            setGrayscaleUseCase(true)
                         }
                     }
                 }
@@ -93,6 +96,7 @@ class AppAccessibilityService : AccessibilityService() {
         serviceScope.launch(Dispatchers.Main) {
             dismissInterceptorUseCase()
             stopTimerUseCase()
+            setGrayscaleUseCase(false)
         }
     }
 
@@ -100,6 +104,7 @@ class AppAccessibilityService : AccessibilityService() {
         serviceScope.launch(Dispatchers.Main) {
             dismissInterceptorUseCase()
             stopTimerUseCase
+            setGrayscaleUseCase(false)
         }
         serviceScope.cancel()
         super.onDestroy()
