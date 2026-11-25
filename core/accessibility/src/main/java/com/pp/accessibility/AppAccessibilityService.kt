@@ -80,7 +80,7 @@ class AppAccessibilityService : AccessibilityService() {
                         if (actions.shouldTimer) {
                             startTimerUseCase(packageName)
                         }
-                        if (true) {
+                        if (actions.shouldEnableGrayscale) {
                             Log.d("GrayscaleController", "enabled")
                             setGrayscaleUseCase(true)
                         }

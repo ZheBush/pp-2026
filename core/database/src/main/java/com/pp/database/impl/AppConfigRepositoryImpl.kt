@@ -24,7 +24,7 @@ class AppConfigRepositoryImpl @Inject constructor() : AppConfigRepository {
                 isSelected = true,
                 isInterceptorEnabled = true,
                 isTimerEnabled = true,
-                isGrayscaleEnabled = false
+                isGrayscaleEnabled = true
             )
         )
     )
