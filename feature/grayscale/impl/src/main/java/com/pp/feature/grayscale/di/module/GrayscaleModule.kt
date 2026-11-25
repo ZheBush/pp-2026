@@ -1,4 +1,4 @@
-package com.pp.feature.grayscale.di
+package com.pp.feature.grayscale.di.module
 
 import com.pp.domain.controller.GrayscaleController
 import com.pp.feature.grayscale.impl.GrayscaleControllerImpl

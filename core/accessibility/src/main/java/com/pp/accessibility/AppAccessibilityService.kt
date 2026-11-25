@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.pp.common.InterceptorPrefs
+import com.pp.database.AppStateRepository
 import com.pp.domain.usecase.HandleAppExitUseCase
 import com.pp.domain.usecase.HandleAppLaunchUseCase
 import com.pp.domain.usecase.grayscale.SetGrayscaleUseCase
@@ -16,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -23,6 +25,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AppAccessibilityService : AccessibilityService() {
 
+    @Inject lateinit var appStateRepository: AppStateRepository
     @Inject lateinit var handleAppLaunchUseCase: HandleAppLaunchUseCase
     @Inject lateinit var handleAppExitUseCase: HandleAppExitUseCase
     @Inject lateinit var showInterceptorUseCase: ShowInterceptorUseCase
@@ -42,6 +45,19 @@ class AppAccessibilityService : AccessibilityService() {
         "com.android.launcher3",
         "com.google.android.apps.nexuslauncher"
     )
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        serviceScope.launch {
+            appStateRepository.observeIsEnabled()
+                .distinctUntilChanged()
+                .collect { isEnabled ->
+                    if (!isEnabled) {
+                        stopActiveControls()
+                    }
+                }
+        }
+    }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
@@ -69,6 +85,8 @@ class AppAccessibilityService : AccessibilityService() {
                 }
 
                 serviceScope.launch {
+                    if (!appStateRepository.getIsEnabled()) return@launch
+
                     val actions = handleAppLaunchUseCase(packageName)
                     if (actions != null) {
                         if (actions.shouldShowInterceptor && !InterceptorPrefs.isBypassed(packageName)) {
@@ -90,8 +108,7 @@ class AppAccessibilityService : AccessibilityService() {
         }
     }
 
-    override fun onInterrupt() {
-        currentPackage = null
+    private fun stopActiveControls() {
         activeInterceptedPackage = null
         serviceScope.launch(Dispatchers.Main) {
             dismissInterceptorUseCase()
@@ -100,12 +117,13 @@ class AppAccessibilityService : AccessibilityService() {
         }
     }
 
+    override fun onInterrupt() {
+        currentPackage = null
+        stopActiveControls()
+    }
+
     override fun onDestroy() {
-        serviceScope.launch(Dispatchers.Main) {
-            dismissInterceptorUseCase()
-            stopTimerUseCase
-            setGrayscaleUseCase(false)
-        }
+        stopActiveControls()
         serviceScope.cancel()
         super.onDestroy()
     }

@@ -18,9 +18,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import com.pp.feature.home.impl.HomeRoute
 import com.pp.feature.home.impl.HomeScreen
 import com.pp.myapplication.ui.theme.MyApplicationTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -56,7 +59,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                HomeScreen()
+                HomeRoute()
             }
         }
     }

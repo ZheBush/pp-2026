@@ -1,4 +1,4 @@
-package com.pp.domain.di
+package com.pp.domain.di.module
 
 import com.pp.database.AppConfigRepository
 import com.pp.database.SessionManagerRepository

@@ -1,4 +1,4 @@
-package com.pp.feature.interceptor.di
+package com.pp.feature.interceptor.di.module
 
 import com.pp.domain.controller.InterceptorController
 import com.pp.feature.interceptor.impl.InterceptorControllerImpl

@@ -1,4 +1,4 @@
-package com.pp.di
+package com.pp.feature.grayscale.di.module
 
 import com.pp.domain.controller.TimerController
 import com.pp.impl.TimerControllerImpl
@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class InterceptorModule {
+abstract class TimerModule {
 
     @Binds
     @Singleton

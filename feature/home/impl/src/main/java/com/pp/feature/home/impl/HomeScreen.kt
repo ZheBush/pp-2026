@@ -20,14 +20,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+@Composable
+fun HomeRoute(
+    viewModel: HomeViewModel = hiltViewModel()
+) {
+    val isServiceEnabled by viewModel.isServiceEnabled.collectAsStateWithLifecycle()
+
+    HomeScreen(
+        isServiceEnabled = isServiceEnabled,
+        onToggleService = viewModel::onToggleService
+    )
+}
 
 @Composable
 fun HomeScreen(
@@ -35,7 +46,6 @@ fun HomeScreen(
     onToggleService: (Boolean) -> Unit = {}
 ) {
     val context = LocalContext.current
-    var localEnabled by remember(isServiceEnabled) { mutableStateOf(isServiceEnabled) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -54,20 +64,16 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
-                    onClick = {
-                        val nextState = !localEnabled
-                        localEnabled = nextState
-                        onToggleService(nextState)
-                    },
+                    onClick = { onToggleService(!isServiceEnabled) },
                     shape = CircleShape,
                     modifier = Modifier.size(168.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (localEnabled) {
+                        containerColor = if (isServiceEnabled) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             MaterialTheme.colorScheme.surfaceVariant
                         },
-                        contentColor = if (localEnabled) {
+                        contentColor = if (isServiceEnabled) {
                             MaterialTheme.colorScheme.onPrimary
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -75,7 +81,7 @@ fun HomeScreen(
                     )
                 ) {
                     Text(
-                        text = if (localEnabled) "ВКЛЮЧЕНО" else "ВЫКЛЮЧЕНО",
+                        text = if (isServiceEnabled) "ВКЛЮЧЕНО" else "ВЫКЛЮЧЕНО",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -83,7 +89,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = if (localEnabled) {
+                    text = if (isServiceEnabled) {
                         "Контроль активен"
                     } else {
                         "Нажмите для запуска"
