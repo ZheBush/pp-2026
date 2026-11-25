@@ -59,5 +59,6 @@ dependencies {
     implementation(project(":feature:home:impl"))
     implementation(project(":feature:interceptor:impl"))
     implementation(project(":feature:timer:impl"))
+    implementation(project(":feature:grayscale:impl"))
     implementation(project(":core:accessibility"))
 }

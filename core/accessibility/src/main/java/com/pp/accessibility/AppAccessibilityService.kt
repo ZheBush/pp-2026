@@ -6,6 +6,7 @@ import com.pp.common.InterceptorPrefs
 import com.pp.domain.usecase.interceptor.DismissInterceptorUseCase
 import com.pp.domain.usecase.HandleAppExitUseCase
 import com.pp.domain.usecase.HandleAppLaunchUseCase
+import com.pp.domain.usecase.grayscale.SetGrayscaleUseCase
 import com.pp.domain.usecase.interceptor.ShowInterceptorUseCase
 import com.pp.domain.usecase.timer.StartTimerUseCase
 import com.pp.domain.usecase.timer.StopTimerUseCase
@@ -27,6 +28,7 @@ class AppAccessibilityService : AccessibilityService() {
     @Inject lateinit var dismissInterceptorUseCase: DismissInterceptorUseCase
     @Inject lateinit var startTimerUseCase: StartTimerUseCase
     @Inject lateinit var stopTimerUseCase: StopTimerUseCase
+    @Inject lateinit var setGrayscaleUseCase: SetGrayscaleUseCase
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var currentPackage: String? = null
@@ -68,7 +70,7 @@ class AppAccessibilityService : AccessibilityService() {
                     val actions = handleAppLaunchUseCase(packageName)
                     if (actions != null) {
                         if (actions.shouldEnableGrayscale) {
-                            enableGrayscaleMode(true)
+                            setGrayscaleUseCase(true)
                         }
                         if (actions.shouldShowInterceptor && !InterceptorPrefs.isBypassed(packageName)) {
                             activeInterceptedPackage = packageName
@@ -101,9 +103,5 @@ class AppAccessibilityService : AccessibilityService() {
         }
         serviceScope.cancel()
         super.onDestroy()
-    }
-
-    private fun enableGrayscaleMode(enable: Boolean) {
-        TODO("Not yet implemented")
     }
 }
